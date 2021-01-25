@@ -197,27 +197,13 @@ func parseFrontendMessage(chunk []byte) (pgproto3.FrontendMessage, error) {
 
 		return t, nil
 	case 'p':
-		// TODO: The `p` BYTE1 value can also represent
-		//       `GSSResponse`, `SASLInitialResponse` and `SASLResponse`
-		pm := &pgproto3.PasswordMessage{}
+		pm := &PasswordMessage{}
 		err := pm.Decode(chunk[5:])
-		if err == nil {
-			return pm, nil
-		}
-
-		sir := &pgproto3.SASLInitialResponse{}
-		err = sir.Decode(chunk[5:])
-		if err == nil {
-			return sir, nil
-		}
-
-		sr := &pgproto3.SASLResponse{}
-		err = sr.Decode(chunk[5:])
 		if err != nil {
 			return nil, err
 		}
 
-		return sr, nil
+		return pm, nil
 	default:
 		return nil, nil
 	}
