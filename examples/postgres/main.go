@@ -47,7 +47,7 @@ func runParse(filename string) error {
 			return parseErr
 		}
 		fmt.Printf(
-			"%2d: Timestamp=%-27s, Client=%s, Server=%s, PostreSQL Fronted Message=%#v\n",
+			"%2d: Timestamp=%-27s, Client=%s, Server=%s, PostgreSQL Frontend Message=%#v\n",
 			i, tp.Timestamp.Format(time.RFC3339Nano),
 			tp.ClientAddr, tp.ServerAddr, fm,
 		)
