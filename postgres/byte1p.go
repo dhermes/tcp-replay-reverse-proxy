@@ -24,12 +24,12 @@ var (
 	_ pgproto3.FrontendMessage = (*Byte1pMessage)(nil)
 )
 
-// Byte1pMessage is a stand-in for the four different message formats, all
-// of which have `'p'` as `Byte1`:
-// - GSSResponse
-// - Byte1pMessage
-// - SASLInitialResponse
-// - SASLResponse
+// Byte1pMessage is a stand-in for the four different message formats that
+// all share `Byte1('p')`:
+// - `GSSResponse`
+// - `Byte1pMessage`
+// - `SASLInitialResponse`
+// - `SASLResponse`
 type Byte1pMessage struct {
 	Data string
 }
