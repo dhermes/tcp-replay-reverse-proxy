@@ -19,40 +19,40 @@ import (
 )
 
 // NOTE: Ensure that
-//       - `PasswordMessage` satisfies `pgproto3.FrontendMessage`
+//       - `Byte1pMessage` satisfies `pgproto3.FrontendMessage`
 var (
-	_ pgproto3.FrontendMessage = (*PasswordMessage)(nil)
+	_ pgproto3.FrontendMessage = (*Byte1pMessage)(nil)
 )
 
-// PasswordMessage is a stand-in for the four different message formats, all
+// Byte1pMessage is a stand-in for the four different message formats, all
 // of which have `'p'` as `Byte1`:
 // - GSSResponse
-// - PasswordMessage
+// - Byte1pMessage
 // - SASLInitialResponse
 // - SASLResponse
-type PasswordMessage struct {
+type Byte1pMessage struct {
 	Data string
 }
 
 // Frontend identifies this message as sendable by a PostgreSQL frontend.
-func (*PasswordMessage) Frontend() {}
+func (*Byte1pMessage) Frontend() {}
 
 // Decode decodes src into `dst`. `src` must contain the complete message with
 // the exception of the initial 1 byte message type identifier and 4 byte
 // message length.
-func (pm *PasswordMessage) Decode(src []byte) error {
-	pm.Data = string(src)
+func (bm *Byte1pMessage) Decode(src []byte) error {
+	bm.Data = string(src)
 	return nil
 }
 
 // Encode encodes `src` into `dst`. `dst` will include the 1 byte message type
 // identifier and the 4 byte message length.
-func (pm *PasswordMessage) Encode(dst []byte) []byte {
+func (bm *Byte1pMessage) Encode(dst []byte) []byte {
 	dst = append(dst, 'p')
 	// Write 4 empty bytes so we can populate them with the length header
 	index := len(dst)
 	dst = append(dst, 0, 0, 0, 0)
-	dataBytes := []byte(pm.Data)
+	dataBytes := []byte(bm.Data)
 	binary.BigEndian.PutUint32(dst[index:], uint32(4+len(dataBytes)))
 	// Write the actual data.
 	dst = append(dst, dataBytes...)

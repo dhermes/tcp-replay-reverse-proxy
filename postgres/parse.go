@@ -197,13 +197,13 @@ func parseFrontendMessage(chunk []byte) (pgproto3.FrontendMessage, error) {
 
 		return t, nil
 	case 'p':
-		pm := &PasswordMessage{}
-		err := pm.Decode(chunk[5:])
+		bm := &Byte1pMessage{}
+		err := bm.Decode(chunk[5:])
 		if err != nil {
 			return nil, err
 		}
 
-		return pm, nil
+		return bm, nil
 	default:
 		return nil, nil
 	}
