@@ -10,32 +10,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 import errno
 import socket
 import threading
+import time
 
 import _buffer
 import _display
 
 
-def _now_naive():
-    return datetime.datetime.utcnow()
-
-
-def _maybe_log_line(log_queue, tcp_chunk, description):
+def _maybe_log_line(log_queue, tcp_chunk, client_socket, server_socket):
     """Sent a log line to the log queue, if set.
 
     Args:
         log_queue (Optional[queue.Queue]): The queue where log lines will be
             pushed, or :data:`None`.
         tcp_chunk (bytes): Chunk of data that was proxied.
-        description (str): A simple description of the socket being proxied.
+        client_socket (socket.socket): The client socket.
+        server_socket (socket.socket): The server socket.
     """
     if log_queue is None:
         return
 
-    log_queue.put((_now_naive(), tcp_chunk, description))
+    log_queue.put((time.time_ns(), tcp_chunk, client_socket, server_socket))
 
 
 def redirect_socket(recv_socket, send_socket, description, log_queue):
@@ -54,7 +51,7 @@ def redirect_socket(recv_socket, send_socket, description, log_queue):
     """
     tcp_chunk = _buffer.recv(recv_socket, send_socket)
     while tcp_chunk != b"":
-        _maybe_log_line(log_queue, tcp_chunk, description)
+        _maybe_log_line(log_queue, tcp_chunk, recv_socket, send_socket)
 
         _buffer.send(send_socket, tcp_chunk)
         # Read the next chunk from the socket.

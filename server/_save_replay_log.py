@@ -11,9 +11,9 @@
 # limitations under the License.
 
 
-import base64
-import datetime
 import queue
+import struct
+import time
 
 
 # Block a `get()` from the queue for 2 seconds.
@@ -50,21 +50,21 @@ def save_log_worker(filename, log_queue, done_event):
                 continue
 
             # NOTE: We assume items in the queue are of type
-            #       `Tuple[datetime.datetime, bytes, str]`.
-            timestamp, tcp_chunk, description = value
-            if timestamp.tzinfo is None:
-                timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+            #       `Tuple[int, bytes, socket.socket, socket.socket]`.
+            time_ns, tcp_chunk, client_socket, server_socket = value
+            client_ip, client_port = client_socket.getpeername()
+            server_ip, server_port = server_socket.getpeername()
 
-            ts_str = timestamp.isoformat()
-            ts_bytes = ts_str.encode("ascii")
-            # NOTE: This **assumes**, but does not check, that `description`
-            #       does not contain a `|`.
+            ts_bytes = struct.pack(">Q", time_ns)
+            chunk_length = struct.pack(">I", len(tcp_chunk))
+            description = (
+                f"{client_ip}:{client_port:d} {server_ip}:{server_port:d}"
+            )
             log_line = (
                 ts_bytes
-                + b"|"
                 + description.encode("ascii")
-                + b"|"
-                + base64.b64encode(tcp_chunk)
-                + b"\n"
+                + b" "
+                + chunk_length
+                + tcp_chunk
             )
             file_obj.write(log_line)
